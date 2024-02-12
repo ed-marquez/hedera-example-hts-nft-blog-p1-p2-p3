@@ -37,7 +37,7 @@ client.setMaxQueryPayment(new Hbar(50));
 
 async function main() {
 	// CREATE NEW HEDERA ACCOUNTS TO REPRESENT OTHER USERS
-	const initBalance = new Hbar(200);
+	const initBalance = new Hbar(2);
 
 	const treasuryKey = PrivateKey.generateED25519();
 	const [treasurySt, treasuryId] = await accountCreateFcn(treasuryKey, initBalance, client);
