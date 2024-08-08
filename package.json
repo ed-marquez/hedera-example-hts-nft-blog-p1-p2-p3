@@ -9,8 +9,9 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"@hashgraph/sdk": "^2.27.0",
+		"@hashgraph/sdk": "^2.49.2",
 		"dotenv": "^10.0.0",
-		"node-fetch": "^3.1.0"
+		"node-fetch": "^3.1.0",
+		"pinata": "^0.1.10"
 	}
 }
