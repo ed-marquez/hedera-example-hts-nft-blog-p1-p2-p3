@@ -53,15 +53,13 @@ async function main() {
 	const pauseKey = PrivateKey.generateECDSA();
 	const freezeKey = PrivateKey.generateECDSA();
 	const wipeKey = PrivateKey.generateECDSA();
-	const kycKey = PrivateKey.generate();
-	const newKycKey = PrivateKey.generate();
 
 	// DEFINE CUSTOM FEE SCHEDULE
 	let nftCustomFee = new CustomRoyaltyFee()
 		.setNumerator(1)
 		.setDenominator(10)
 		.setFeeCollectorAccountId(treasuryId)
-		.setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(1)));
+		.setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(1, HbarUnit.Tinybar))); // 1 HBAR = 100,000,000 Tinybar
 
 	// IPFS CONTENT IDENTIFIERS FOR WHICH WE WILL CREATE NFTs - SEE uploadJsonToIpfs.js
 	let CIDs = [
@@ -155,7 +153,8 @@ async function main() {
 	console.log(`- Bob balance: ${bB[0]} NFTs of ID:${tokenId} and ${bB[1]}`);
 
 	// 2nd NFT TRANSFER NFT Alice->Bob
-	let nftPrice = new Hbar(10000000, HbarUnit.Tinybar); // 1HBAR = 10,000,000 Tinybar
+	let nftPrice = new Hbar(10000000, HbarUnit.Tinybar); // 1 HBAR = 10,000,000 Tinybar
+
 	let tokenTransferTx2 = await new TransferTransaction()
 		.addNftTransfer(tokenId, 2, aliceId, bobId)
 		.addHbarTransfer(aliceId, nftPrice)
@@ -175,6 +174,10 @@ async function main() {
 	console.log(`\n- Treasury balance: ${oB[0]} NFTs of ID:${tokenId} and ${oB[1]}`);
 	console.log(`- Alice balance: ${aB[0]} NFTs of ID:${tokenId} and ${aB[1]}`);
 	console.log(`- Bob balance: ${bB[0]} NFTs of ID:${tokenId} and ${bB[1]}`);
+
+	console.log(`\n- THE END ============================================================\n`);
+	console.log(`- 👇 Go to:`);
+	console.log(`- 🔗 www.hedera.com/discord\n`);
 
 	client.close();
 

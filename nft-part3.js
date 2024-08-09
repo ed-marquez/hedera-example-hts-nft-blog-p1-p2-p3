@@ -11,6 +11,7 @@ const {
 	CustomRoyaltyFee,
 	CustomFixedFee,
 	Hbar,
+	HbarUnit,
 	TokenSupplyType,
 	TokenMintTransaction,
 	TokenBurnTransaction,
