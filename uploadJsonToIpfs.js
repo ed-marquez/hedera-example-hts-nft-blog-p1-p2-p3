@@ -1,7 +1,4 @@
-import fs from "fs";
-import { PinataSDK } from "pinata";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
+const { PinataSDK } = require("pinata");
 require("dotenv").config();
 
 const pinata = new PinataSDK({
@@ -20,7 +17,7 @@ async function uploadJsonToIpfsFcn() {
 		"ipfs://QmaRPNrGzbj7jpheFPujM72rr2upDS72Ca1gLFBmJKSPij",
 		"ipfs://Qmb5yU3bxWT5QFYnQY32P1KouU52rwoTqNjVhFm16uPR3i",
 		"ipfs://QmeZ86y884AfpswZW8J13BXt4K2N8LFPBLBBkfQnPNHBb9",
-	];
+	]; // CID of the images - you must have uploaded the images to IPFS to get the CIDs
 
 	for (let i = 0; i < names.length; i++) {
 		const metadata = {
@@ -39,14 +36,12 @@ async function uploadJsonToIpfsFcn() {
 				website: "www.hashgraph.com",
 			},
 		};
-		const metadataJson = JSON.stringify(metadata);
 
-		const file = new File([metadataJson], `${names[i]}.json`, { type: "application/json" });
-
-		const upload = await pinata.upload.file(file);
+		const upload = await pinata.upload.json(metadata).addMetadata({
+			name: `${names[i]}.json`,
+		});
 
 		console.log(`Uploaded metadata for ${names[i]}:`, upload);
 	}
 }
 uploadJsonToIpfsFcn();
-export default uploadJsonToIpfsFcn;
