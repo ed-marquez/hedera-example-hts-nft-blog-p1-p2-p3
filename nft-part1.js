@@ -98,6 +98,7 @@ async function main() {
 
 	// TOKEN QUERY TO CHECK THAT THE CUSTOM FEE SCHEDULE IS ASSOCIATED WITH NFT
 	var tokenInfo = await new TokenInfoQuery().setTokenId(tokenId).execute(client);
+	console.log(` `);
 	console.table(tokenInfo.customFees[0]);
 
 	// MINT NEW BATCH OF NFTs - CAN MINT UP TO 10 NFT SERIALS IN A SINGLE TRANSACTION
@@ -113,20 +114,20 @@ async function main() {
 	console.log(`- See: https://hashscan.io/${network}/transaction/${tokenBurnSubmit.transactionId}`);
 
 	var tokenInfo = await new TokenInfoQuery().setTokenId(tokenId).execute(client);
-	console.log(`\n- Current NFT supply: ${tokenInfo.totalSupply}`);
+	console.log(`- Current NFT supply: ${tokenInfo.totalSupply}`);
 
 	// AUTO-ASSOCIATION FOR ALICE'S ACCOUNT
 	let associateTx = await new AccountUpdateTransaction().setAccountId(aliceId).setMaxAutomaticTokenAssociations(10).freezeWith(client).sign(aliceKey);
 	let associateTxSubmit = await associateTx.execute(client);
 	let associateRx = await associateTxSubmit.getReceipt(client);
-	console.log(`\n- Alice NFT Auto-Association: ${associateRx.status}`);
+	console.log(`\n- Alice NFT auto-association: ${associateRx.status}`);
 	console.log(`- See: https://hashscan.io/${network}/transaction/${associateTxSubmit.transactionId}`);
 
 	// MANUAL ASSOCIATION FOR BOB'S ACCOUNT
 	let associateBobTx = await new TokenAssociateTransaction().setAccountId(bobId).setTokenIds([tokenId]).freezeWith(client).sign(bobKey);
 	let associateBobTxSubmit = await associateBobTx.execute(client);
 	let associateBobRx = await associateBobTxSubmit.getReceipt(client);
-	console.log(`\n- Bob NFT Manual Association: ${associateBobRx.status}`);
+	console.log(`\n- Bob NFT manual association: ${associateBobRx.status}`);
 	console.log(`- See: https://hashscan.io/${network}/transaction/${associateBobTxSubmit.transactionId}`);
 
 	// BALANCE CHECK 1
@@ -137,11 +138,11 @@ async function main() {
 	console.log(`- Alice balance: ${aB[0]} NFTs of ID:${tokenId} and ${aB[1]}`);
 	console.log(`- Bob balance: ${bB[0]} NFTs of ID:${tokenId} and ${bB[1]}`);
 
-	// 1st TRANSFER NFT Treasury->Alice
+	// 1st TRANSFER NFT Treasury -> Alice
 	let tokenTransferTx = await new TransferTransaction().addNftTransfer(tokenId, 2, treasuryId, aliceId).freezeWith(client).sign(treasuryKey);
 	let tokenTransferSubmit = await tokenTransferTx.execute(client);
 	let tokenTransferRx = await tokenTransferSubmit.getReceipt(client);
-	console.log(`\n NFT transfer Treasury->Alice status: ${tokenTransferRx.status}`);
+	console.log(`\n- NFT transfer Treasury -> Alice status: ${tokenTransferRx.status}`);
 	console.log(`- See: https://hashscan.io/${network}/transaction/${tokenTransferSubmit.transactionId}`);
 
 	// BALANCE CHECK 2
@@ -152,7 +153,7 @@ async function main() {
 	console.log(`- Alice balance: ${aB[0]} NFTs of ID:${tokenId} and ${aB[1]}`);
 	console.log(`- Bob balance: ${bB[0]} NFTs of ID:${tokenId} and ${bB[1]}`);
 
-	// 2nd NFT TRANSFER NFT Alice->Bob
+	// 2nd NFT TRANSFER NFT Alice -> Bob
 	let nftPrice = new Hbar(10000000, HbarUnit.Tinybar); // 1 HBAR = 10,000,000 Tinybar
 
 	let tokenTransferTx2 = await new TransferTransaction()
@@ -164,7 +165,7 @@ async function main() {
 	let tokenTransferTx2Sign = await tokenTransferTx2.sign(bobKey);
 	let tokenTransferSubmit2 = await tokenTransferTx2Sign.execute(client);
 	let tokenTransferRx2 = await tokenTransferSubmit2.getReceipt(client);
-	console.log(`\n NFT transfer Alice->Bob status: ${tokenTransferRx2.status}`);
+	console.log(`\n- NFT transfer Alice -> Bob status: ${tokenTransferRx2.status}`);
 	console.log(`- See: https://hashscan.io/${network}/transaction/${tokenTransferSubmit2.transactionId}`);
 
 	// BALANCE CHECK 3

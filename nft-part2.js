@@ -104,6 +104,7 @@ async function main() {
 
 	// TOKEN QUERY TO CHECK THAT THE CUSTOM FEE SCHEDULE IS ASSOCIATED WITH NFT
 	var tokenInfo = await tQueryFcn();
+	console.log(` `);
 	console.table(tokenInfo.customFees[0]);
 
 	// MINT NEW BATCH OF NFTs - CAN MINT UP TO 10 NFT SERIALS IN A SINGLE TRANSACTION
@@ -132,11 +133,11 @@ async function main() {
 	let associateBobTx = await new TokenAssociateTransaction().setAccountId(bobId).setTokenIds([tokenId]).freezeWith(client).sign(bobKey);
 	let associateBobTxSubmit = await associateBobTx.execute(client);
 	let associateBobRx = await associateBobTxSubmit.getReceipt(client);
-	console.log(`\n- Bob NFT Manual Association: ${associateBobRx.status}`);
+	console.log(`\n- Bob NFT manual association: ${associateBobRx.status}`);
 	console.log(`- See: https://hashscan.io/${network}/transaction/${associateBobTxSubmit.transactionId}`);
 
 	// PART 2.1 STARTS ============================================================
-	console.log(`\nPART 2.1 STARTS ============================================================\n`);
+	console.log(`\nPART 2.1 STARTS ============================================================`);
 	// ENABLE TOKEN KYC FOR ALICE AND BOB
 	let [aliceKycRx, aliceKycTxId] = await kycEnableFcn(aliceId);
 	let [bobKyc, bobKycTxId] = await kycEnableFcn(bobId);
@@ -169,21 +170,21 @@ async function main() {
 	console.log(`\n- KYC key for the NFT is: \n${tokenInfo.kycKey.toString()}`);
 
 	// PART 2.1 ENDS ============================================================
-	console.log(`\nPART 2.1 ENDS ============================================================\n`);
+	console.log(`\nPART 2.1 ENDS ============================================================`);
 
 	// BALANCE CHECK 1
 	oB = await bCheckerFcn(treasuryId);
 	aB = await bCheckerFcn(aliceId);
 	bB = await bCheckerFcn(bobId);
-	console.log(`- Treasury balance: ${oB[0]} NFTs of ID: ${tokenId} and ${oB[1]}`);
+	console.log(`\n- Treasury balance: ${oB[0]} NFTs of ID: ${tokenId} and ${oB[1]}`);
 	console.log(`- Alice balance: ${aB[0]} NFTs of ID: ${tokenId} and ${aB[1]}`);
 	console.log(`- Bob balance: ${bB[0]} NFTs of ID: ${tokenId} and ${bB[1]}`);
 
-	// 1st TRANSFER NFT Treasury->Alice
+	// 1st TRANSFER NFT Treasury -> Alice
 	let tokenTransferTx = await new TransferTransaction().addNftTransfer(tokenId, 2, treasuryId, aliceId).freezeWith(client).sign(treasuryKey);
 	let tokenTransferSubmit = await tokenTransferTx.execute(client);
 	let tokenTransferRx = await tokenTransferSubmit.getReceipt(client);
-	console.log(`\n NFT transfer Treasury->Alice status: ${tokenTransferRx.status}`);
+	console.log(`\n- NFT transfer Treasury -> Alice status: ${tokenTransferRx.status}`);
 	console.log(`- See: https://hashscan.io/${network}/transaction/${tokenTransferSubmit.transactionId}`);
 
 	// BALANCE CHECK 2
@@ -194,7 +195,7 @@ async function main() {
 	console.log(`- Alice balance: ${aB[0]} NFTs of ID:${tokenId} and ${aB[1]}`);
 	console.log(`- Bob balance: ${bB[0]} NFTs of ID:${tokenId} and ${bB[1]}`);
 
-	// 2nd NFT TRANSFER NFT Alice->Bob
+	// 2nd NFT TRANSFER NFT Alice - >Bob
 	let nftPrice = new Hbar(10000000, HbarUnit.Tinybar); // 1 HBAR = 10,000,000 Tinybar
 
 	let tokenTransferTx2 = await new TransferTransaction()
@@ -206,7 +207,7 @@ async function main() {
 	let tokenTransferTx2Sign = await tokenTransferTx2.sign(bobKey);
 	let tokenTransferSubmit2 = await tokenTransferTx2Sign.execute(client);
 	let tokenTransferRx2 = await tokenTransferSubmit2.getReceipt(client);
-	console.log(`\n NFT transfer Alice->Bob status: ${tokenTransferRx2.status}`);
+	console.log(`\n- NFT transfer Alice -> Bob status: ${tokenTransferRx2.status}`);
 	console.log(`- See: https://hashscan.io/${network}/transaction/${tokenTransferSubmit2.transactionId}`);
 
 	// BALANCE CHECK 3
@@ -218,9 +219,9 @@ async function main() {
 	console.log(`- Bob balance: ${bB[0]} NFTs of ID:${tokenId} and ${bB[1]}`);
 
 	// PART 2.2 STARTS ============================================================
-	console.log(`\nPART 2.2 STARTS ============================================================\n`);
+	console.log(`\nPART 2.2 STARTS ============================================================`);
 
-	// CREATE THE NFT TRANSFER FROM BOB->ALICE TO BE SCHEDULED
+	// CREATE THE NFT TRANSFER FROM BOB -> ALICE TO BE SCHEDULED
 	// REQUIRES ALICE'S AND BOB'S SIGNATURES
 	let txToSchedule = new TransferTransaction()
 		.addNftTransfer(tokenId, 2, bobId, aliceId)
@@ -244,7 +245,7 @@ async function main() {
 
 	// QUERY TO CONFIRM IF THE SCHEDULE WAS TRIGGERED (SIGNATURES HAVE BEEN ADDED)
 	scheduleQuery = await new ScheduleInfoQuery().setScheduleId(scheduleId).execute(client);
-	console.log(`- Schedule triggered (all required signatures received): ${scheduleQuery.executed !== null}`);
+	console.log(`\n- Schedule triggered (all required signatures received): ${scheduleQuery.executed !== null}`);
 
 	// SUBMIT BOB'S SIGNATURE FOR THE TRANSFER TRANSACTION
 	let bobSignTx = await new ScheduleSignTransaction().setScheduleId(scheduleId).freezeWith(client).sign(bobKey);
@@ -255,18 +256,18 @@ async function main() {
 
 	// QUERY TO CONFIRM IF THE SCHEDULE WAS TRIGGERED (SIGNATURES HAVE BEEN ADDED)
 	scheduleQuery = await new ScheduleInfoQuery().setScheduleId(scheduleId).execute(client);
-	console.log(`- Schedule triggered (all required signatures received): ${scheduleQuery.executed !== null} \n`);
+	console.log(`\n- Schedule triggered (all required signatures received): ${scheduleQuery.executed !== null}`);
 
 	// VERIFY THAT THE SCHEDULED TRANSACTION (TOKEN TRANSFER) EXECUTED
 	oB = await bCheckerFcn(treasuryId);
 	aB = await bCheckerFcn(aliceId);
 	bB = await bCheckerFcn(bobId);
-	console.log(`- Treasury balance: ${oB[0]} NFTs of ID: ${tokenId} and ${oB[1]}`);
+	console.log(`\n- Treasury balance: ${oB[0]} NFTs of ID: ${tokenId} and ${oB[1]}`);
 	console.log(`- Alice balance: ${aB[0]} NFTs of ID: ${tokenId} and ${aB[1]}`);
 	console.log(`- Bob balance: ${bB[0]} NFTs of ID: ${tokenId} and ${bB[1]}`);
 
-	console.log(`\n- THE END ============================================================\n`);
-	console.log(`- 👇 Go to:`);
+	console.log(`\n- THE END ============================================================`);
+	console.log(`\n- 👇 Go to:`);
 	console.log(`- 🔗 www.hedera.com/discord\n`);
 
 	client.close();
@@ -296,6 +297,7 @@ async function main() {
 		balanceCheckTx = await new AccountBalanceQuery().setAccountId(id).execute(client);
 		return [balanceCheckTx.tokens._map.get(tokenId.toString()), balanceCheckTx.hbars];
 	}
+
 	// KYC ENABLE FUNCTION ==========================================
 	async function kycEnableFcn(id) {
 		let kycEnableTx = await new TokenGrantKycTransaction().setAccountId(id).setTokenId(tokenId).freezeWith(client).sign(kycKey);
