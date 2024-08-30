@@ -32,6 +32,8 @@ const {
 	TokenUnfreezeTransaction,
 	TokenDeleteTransaction,
 	AccountCreateTransaction,
+	TokenFeeScheduleUpdateTransaction,
+	TokenUpdateNftsTransaction,
 } = require("@hashgraph/sdk");
 
 // CONFIGURE ACCOUNTS AND CLIENT, AND GENERATE  accounts and client, and generate needed keys
@@ -63,15 +65,24 @@ async function main() {
 	const pauseKey = PrivateKey.generateECDSA();
 	const freezeKey = PrivateKey.generateECDSA();
 	const wipeKey = PrivateKey.generateECDSA();
-	const kycKey = PrivateKey.generate();
-	const newKycKey = PrivateKey.generate();
+	const kycKey = PrivateKey.generateECDSA();
+	const newKycKey = PrivateKey.generateECDSA();
+	const feeScheduleKey = PrivateKey.generateECDSA();
+	const metadataKey = PrivateKey.generateECDSA();
 
-	// DEFINE CUSTOM FEE SCHEDULE
+	// DEFINE THE INITIAL CUSTOM FEE SCHEDULE FOR THE NFT COLLECTION
 	let nftCustomFee = new CustomRoyaltyFee()
 		.setNumerator(1)
 		.setDenominator(10)
 		.setFeeCollectorAccountId(treasuryId)
 		.setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(1, HbarUnit.Tinybar))); // 1 HBAR = 100,000,000 Tinybar
+
+	// DEFINE A 2ND CUSTOM FEE SCHEDULE TO BE ADDED LATER
+	let nftCustomFeeNew = new CustomRoyaltyFee()
+		.setNumerator(1)
+		.setDenominator(10)
+		.setFeeCollectorAccountId(aliceId)
+		.setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(10, HbarUnit.Tinybar))); // 1 HBAR = 100,000,000 Tinybar
 
 	// IPFS CONTENT IDENTIFIERS FOR WHICH WE WILL CREATE NFTs - SEE uploadJsonToIpfs.js
 	let CIDs = [
@@ -81,6 +92,9 @@ async function main() {
 		Buffer.from("ipfs://bafkreiaoswszev3uoukkepctzpnzw56ey6w3xscokvsvmfrqdzmyhas6fu"),
 		Buffer.from("ipfs://bafkreih6cajqynaqwbrmiabk2jxpy56rpf25zvg5lbien73p5ysnpehyjm"),
 	];
+
+	// DEFINE A NEW CID TO UPDATE THE METADATA FOR AN NFT SERIAL NUMBER LATER ON
+	let updatedCID = Buffer.from("ipfs://bafkreid4bswrg75e46tdz2as7vjamszql5242e6j3t5fjvu6pf4p5vuwrm");
 
 	// CREATE NFT WITH CUSTOM FEE
 	let nftCreateTx = await new TokenCreateTransaction()
@@ -99,6 +113,8 @@ async function main() {
 		.setPauseKey(pauseKey.publicKey)
 		.setFreezeKey(freezeKey.publicKey)
 		.setWipeKey(wipeKey.publicKey)
+		.setFeeScheduleKey(feeScheduleKey.publicKey)
+		.setMetadataKey(metadataKey.publicKey)
 		.freezeWith(client)
 		.sign(treasuryKey);
 
@@ -111,7 +127,8 @@ async function main() {
 
 	// TOKEN QUERY TO CHECK THAT THE CUSTOM FEE SCHEDULE IS ASSOCIATED WITH NFT
 	var tokenInfo = await tQueryFcn();
-	console.log(` `);
+	console.log(`\n- Current token fees:`);
+	console.table(tokenInfo.customFees);
 	console.table(tokenInfo.customFees[0]);
 
 	// MINT NEW BATCH OF NFTs - CAN MINT UP TO 10 NFT SERIALS IN A SINGLE TRANSACTION
@@ -228,6 +245,22 @@ async function main() {
 	// PART 2.2 STARTS ============================================================
 	console.log(`\nPART 2.2 STARTS ============================================================`);
 
+	// UPDATE THE TOKEN FEES TO INCLUDE A SECOND CUSTOM FEE SCHEDULE
+	let tokenFeeUpdateTx = await new TokenFeeScheduleUpdateTransaction()
+		.setTokenId(tokenId)
+		.setCustomFees([nftCustomFee, nftCustomFeeNew])
+		.freezeWith(client)
+		.sign(feeScheduleKey);
+	let tokenFeeUpdateSubmitTx = await tokenFeeUpdateTx.execute(client);
+	let tokenFeeUpdateRx = await tokenFeeUpdateSubmitTx.getReceipt(client);
+	console.log(`\n- Token fee schedule update (add 2nd custom fee): ${tokenFeeUpdateRx.status}`);
+	console.log(`- See: https://hashscan.io/${network}/transaction/${tokenFeeUpdateSubmitTx.transactionId}`);
+
+	// QUERY TO CHECK CHANGE IN FEE SCHEDULE
+	var tokenInfo = await tQueryFcn();
+	console.log(`\n- Updated token fees:`);
+	console.table(tokenInfo.customFees);
+
 	// CREATE THE NFT TRANSFER FROM BOB -> ALICE TO BE SCHEDULED
 	// REQUIRES ALICE'S AND BOB'S SIGNATURES
 	let txToSchedule = new TransferTransaction()
@@ -275,6 +308,18 @@ async function main() {
 
 	// PART 3 ============================================================
 	console.log(`\nPART 3 STARTS ============================================================`);
+
+	// UPDATE THE METADATA FOR THE NFT SERIAL IN CIRCULATION
+	const nftSerialMetadataUpdateTx = await new TokenUpdateNftsTransaction()
+		.setTokenId(tokenId)
+		.setSerialNumbers([2])
+		.setMetadata(updatedCID)
+		.freezeWith(client)
+		.sign(metadataKey);
+	const nftSerialMetadataUpdateSubmit = await nftSerialMetadataUpdateTx.execute(client);
+	const nftSerialMetadataUpdateRx = await nftSerialMetadataUpdateSubmit.getReceipt(client);
+	console.log(`\n- Update metadata for NFT serial 2: ${nftSerialMetadataUpdateRx.status}`);
+	console.log(`- See: https://hashscan.io/${network}/transaction/${nftSerialMetadataUpdateSubmit.transactionId}`);
 
 	// PAUSE ALL TOKEN OEPRATIONS
 	let tokenPauseTx = await new TokenPauseTransaction().setTokenId(tokenId).freezeWith(client).sign(pauseKey);
