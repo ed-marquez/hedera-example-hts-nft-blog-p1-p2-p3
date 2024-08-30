@@ -94,7 +94,7 @@ async function main() {
 	];
 
 	// DEFINE A NEW CID TO UPDATE THE METADATA FOR AN NFT SERIAL NUMBER LATER ON
-	let updatedCID = Buffer.from("ipfs://bafkreid4bswrg75e46tdz2as7vjamszql5242e6j3t5fjvu6pf4p5vuwrm");
+	let updatedCID = Buffer.from("ipfs://bafkreidz5whp63d6ntnjwvnn3ydjziufa5g5uujm4l5cwyofc2djztoine");
 
 	// CREATE NFT WITH CUSTOM FEE
 	let nftCreateTx = await new TokenCreateTransaction()
